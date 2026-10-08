@@ -31,7 +31,25 @@ const Login = () => {
 
       navigate("/products");
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid email or password. Please try again.");
+      if (err.response?.status === 401 || err.response?.status === 404) {
+        try {
+          const { adminLogin } = await import("../../services/adminService");
+          const adminResponse = await adminLogin({
+            email: email.trim(),
+            password,
+          });
+
+          localStorage.setItem("adminToken", adminResponse.token);
+          localStorage.setItem("adminData", JSON.stringify(adminResponse.admin || adminResponse.user || {}));
+          
+          navigate("/admin/dashboard");
+          return;
+        } catch (adminErr) {
+          setError(adminErr.response?.data?.message || "Invalid email or password. Please try again.");
+        }
+      } else {
+        setError(err.response?.data?.message || "Invalid email or password. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -113,11 +131,19 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="mt-5 border-t border-slate-200 pt-4 text-center text-sm text-slate-500">
-            Don’t have an account?{" "}
-            <Link to="/register" className="font-medium text-slate-800 underline-offset-2 hover:underline">
-              Register
-            </Link>
+          <div className="mt-5 border-t border-slate-200 pt-4 text-center text-sm text-slate-500 flex flex-col gap-2">
+            <div>
+              Don’t have an account?{" "}
+              <Link to="/register" className="font-medium text-slate-800 underline-offset-2 hover:underline">
+                Register
+              </Link>
+            </div>
+            <div>
+              Are you an administrator?{" "}
+              <Link to="/admin/login" className="font-medium text-blue-600 underline-offset-2 hover:underline">
+                Admin Login
+              </Link>
+            </div>
           </div>
         </div>
       </div>

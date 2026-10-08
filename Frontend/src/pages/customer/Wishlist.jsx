@@ -180,7 +180,12 @@ const Wishlist = () => {
                 >
 
                   <img
-                    src={getImageUrl(item.primary_image || item.image)}
+                    src={getImageUrl(
+                      item.primary_image ||
+                        item.image ||
+                        item.image_path ||
+                        item.image_url
+                    )}
                     alt={item.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
